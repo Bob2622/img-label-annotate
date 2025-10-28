@@ -1,0 +1,93 @@
+.label-wrapper {
+  position: relative;
+}
+
+.label-page {
+  width: 100%;
+  overflow: hidden;
+}
+
+.label-flex {
+  height: calc(100vh - 140px);
+}
+
+.full-height {
+  height: 100%;
+}
+
+.label-container {
+  position: relative;
+  overflow: auto;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  cursor: crosshair;
+  user-select: none;
+  background: #fafafa;
+}
+
+.label-content {
+  position: relative;
+  transform-origin: top left;
+}
+
+.label-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.label-overlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.label-preview {
+  position: absolute;
+  display: none;
+  border: 1px dashed #1677ff;
+  background: rgba(22, 119, 255, 0.1);
+  border-radius: 4px;
+}
+
+.label-box {
+  position: absolute;
+  border: 2px solid #1677ff;
+  background: rgba(22, 119, 255, 0.1);
+  border-radius: 4px;
+}
+
+.label-title {
+  margin: 0;
+}
+
+.label-minimap-wrapper {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.label-minimap {
+  position: relative;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  background-color: #fff;
+  cursor: default;
+}
+
+.label-minimap-viewport {
+  position: absolute;
+  border: 2px solid #1677ff;
+  background: rgba(22, 119, 255, 0.12);
+  cursor: grab;
+  border-radius: 4px;
+}
+

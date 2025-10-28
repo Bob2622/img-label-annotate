@@ -1,0 +1,28 @@
+.app-layout {
+  min-height: 100vh;
+}
+
+.app-logo {
+  height: 64px;
+  margin: 16px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.app-header {
+  // background driven by theme token via inline style previously
+}
+
+.app-content {
+  margin: 16px;
+}
+
+.app-content-inner {
+  padding: 24px;
+  min-height: 360px;
+}
