@@ -1,0 +1,12 @@
+.image-annotator {
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+
+  canvas {
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}

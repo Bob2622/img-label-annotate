@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试图片生成器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .canvas-container {
+            margin: 20px 0;
+            border: 1px solid #ddd;
+        }
+        canvas {
+            display: block;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #40a9ff;
+        }
+        .info {
+            background: #e6f7ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>图片标注平台 - 测试图片生成器</h1>
+
+    <div class="info">
+        <h3>使用说明:</h3>
+        <ol>
+            <li>点击下方按钮生成测试图片</li>
+            <li>右键点击图片 → "图片另存为" 保存到本地</li>
+            <li>或直接点击"下载所有图片"按钮</li>
+            <li>然后在标注平台中导入这些图片进行测试</li>
+        </ol>
+    </div>
+
+    <button onclick="generateAllImages()">生成所有测试图片</button>
+    <button onclick="downloadAll()">下载所有图片</button>
+
+    <div id="canvas-container"></div>
+
+    <script>
+        const images = [];
+
+        function generateAllImages() {
+            const container = document.getElementById('canvas-container');
+            container.innerHTML = '';
+            images.length = 0;
+
+            // 生成不同类型的测试图片
+            generateImage1(container);
+            generateImage2(container);
+            generateImage3(container);
+            generateImage4(container);
+            generateImage5(container);
+        }
+
+        // 图片1: 文字超出边界
+        function generateImage1(container) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 600;
+            const ctx = canvas.getContext('2d');
+
+            // 背景
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, 800, 600);
+
+            // 边框
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(50, 50, 700, 500);
+
+            // 标题
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 24px Arial';
+            ctx.fillText('测试图片 1 - 文字超出边界', 60, 90);
+
+            // 模拟文字超出的矩形框
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(100, 150, 600, 100);
+            ctx.strokeStyle = '#999';
+            ctx.strokeRect(100, 150, 600, 100);
+
+            // 超出的文字
+            ctx.fillStyle = '#000';
+            ctx.font = '20px Arial';
+            ctx.fillText('这是一段很长的文字内容,可能会超出边框范围,需要进行标注检查', 110, 200);
+
+            // 添加一些标注区域提示
+            ctx.strokeStyle = '#ff0000';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.strokeRect(650, 170, 100, 60);
+            ctx.setLineDash([]);
+
+            container.appendChild(canvas);
+            images.push({ canvas, name: 'test_image_1_text_overflow.jpg' });
+
+            const label = document.createElement('p');
+            label.textContent = '图片1: 文字超出边界 (800x600)';
+            label.style.fontWeight = 'bold';
+            container.appendChild(label);
+        }
+
+        // 图片2: 文本重叠
+        function generateImage2(container) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 600;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#e8f5e9';
+            ctx.fillRect(0, 0, 800, 600);
+
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 24px Arial';
+            ctx.fillText('测试图片 2 - 文本重叠', 60, 50);
+
+            // 第一个文本框
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(100, 150, 300, 80);
+            ctx.strokeStyle = '#333';
+            ctx.strokeRect(100, 150, 300, 80);
+            ctx.fillStyle = '#000';
+            ctx.font = '18px Arial';
+            ctx.fillText('第一段文字内容', 120, 195);
+
+            // 第二个文本框(重叠)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(250, 180, 300, 80);
+            ctx.strokeStyle = '#333';
+            ctx.strokeRect(250, 180, 300, 80);
+            ctx.fillStyle = '#000';
+            ctx.fillText('第二段重叠文字', 270, 225);
+
+            // 标注重叠区域
+            ctx.strokeStyle = '#ff9800';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(250, 180, 150, 50);
+
+            container.appendChild(canvas);
+            images.push({ canvas, name: 'test_image_2_text_overlap.jpg' });
+
+            const label = document.createElement('p');
+            label.textContent = '图片2: 文本重叠 (800x600)';
+            label.style.fontWeight = 'bold';
+            container.appendChild(label);
+        }
+
+        // 图片3: 正常图片
+        function generateImage3(container) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 768;
+            const ctx = canvas.getContext('2d');
+
+            // 渐变背景
+            const gradient = ctx.createLinearGradient(0, 0, 1024, 768);
+            gradient.addColorStop(0, '#4facfe');
+            gradient.addColorStop(1, '#00f2fe');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 1024, 768);
+
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 32px Arial';
+            ctx.fillText('测试图片 3 - 正常布局', 50, 80);
+
+            // 卡片布局
+            for (let i = 0; i < 3; i++) {
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(100 + i * 300, 150, 250, 200);
+                ctx.strokeStyle = '#ddd';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(100 + i * 300, 150, 250, 200);
+
+                ctx.fillStyle = '#000';
+                ctx.font = '20px Arial';
+                ctx.fillText(`卡片 ${i + 1}`, 120 + i * 300, 200);
+                ctx.font = '14px Arial';
+                ctx.fillText('这是卡片内容', 120 + i * 300, 230);
+                ctx.fillText('描述信息...', 120 + i * 300, 260);
+            }
+
+            container.appendChild(canvas);
+            images.push({ canvas, name: 'test_image_3_normal.jpg' });
+
+            const label = document.createElement('p');
+            label.textContent = '图片3: 正常布局 (1024x768)';
+            label.style.fontWeight = 'bold';
+            container.appendChild(label);
+        }
+
+        // 图片4: 黑屏模拟
+        function generateImage4(container) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 800;
+            canvas.height = 600;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, 800, 600);
+
+            ctx.fillStyle = '#666';
+            ctx.font = 'italic 20px Arial';
+            ctx.fillText('模拟黑屏/加载失败', 300, 300);
+
+            container.appendChild(canvas);
+            images.push({ canvas, name: 'test_image_4_black_screen.jpg' });
+
+            const label = document.createElement('p');
+            label.textContent = '图片4: 黑屏模拟 (800x600)';
+            label.style.fontWeight = 'bold';
+            container.appendChild(label);
+        }
+
+        // 图片5: 复杂布局
+        function generateImage5(container) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1200;
+            canvas.height = 800;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, 1200, 800);
+
+            // 顶部导航栏
+            ctx.fillStyle = '#1890ff';
+            ctx.fillRect(0, 0, 1200, 60);
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 24px Arial';
+            ctx.fillText('电商平台页面', 20, 40);
+
+            // 侧边栏
+            ctx.fillStyle = '#f5f5f5';
+            ctx.fillRect(0, 60, 200, 740);
+            ctx.fillStyle = '#000';
+            ctx.font = '16px Arial';
+            ['首页', '分类', '购物车', '我的'].forEach((text, i) => {
+                ctx.fillText(text, 20, 100 + i * 40);
+            });
+
+            // 主内容区商品卡片
+            for (let row = 0; row < 2; row++) {
+                for (let col = 0; col < 4; col++) {
+                    const x = 220 + col * 240;
+                    const y = 100 + row * 300;
+
+                    // 商品卡片
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(x, y, 220, 280);
+                    ctx.strokeStyle = '#e0e0e0';
+                    ctx.strokeRect(x, y, 220, 280);
+
+                    // 商品图片区
+                    ctx.fillStyle = '#f0f0f0';
+                    ctx.fillRect(x + 10, y + 10, 200, 180);
+
+                    // 商品信息
+                    ctx.fillStyle = '#000';
+                    ctx.font = '14px Arial';
+                    ctx.fillText('商品名称标题', x + 15, y + 210);
+                    ctx.fillStyle = '#666';
+                    ctx.font = '12px Arial';
+                    ctx.fillText('描述信息...', x + 15, y + 230);
+                    ctx.fillStyle = '#ff4d4f';
+                    ctx.font = 'bold 18px Arial';
+                    ctx.fillText('¥99.00', x + 15, y + 260);
+                }
+            }
+
+            container.appendChild(canvas);
+            images.push({ canvas, name: 'test_image_5_complex_layout.jpg' });
+
+            const label = document.createElement('p');
+            label.textContent = '图片5: 复杂电商布局 (1200x800)';
+            label.style.fontWeight = 'bold';
+            container.appendChild(label);
+        }
+
+        function downloadAll() {
+            if (images.length === 0) {
+                alert('请先生成图片!');
+                return;
+            }
+
+            images.forEach(({ canvas, name }) => {
+                canvas.toBlob(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = name;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                }, 'image/jpeg', 0.95);
+            });
+
+            alert('开始下载 ' + images.length + ' 张图片!');
+        }
+
+        // 页面加载时自动生成
+        window.onload = generateAllImages;
+    </script>
+</body>
+</html>

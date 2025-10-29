@@ -6,6 +6,12 @@ export default defineConfig({
   server: {
     port: 5173,
     open: true
+  },
+  define: {
+    'process.env': {},
+    'process.cwd': '() => "/"',
+    'process.platform': '"browser"',
+    'process.version': '"v16.0.0"'
   }
 });
 
