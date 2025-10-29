@@ -1,487 +1,208 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import './labeling.scss';
-import { Button, Card, Flex, Space, Typography, Tag, message } from 'antd';
+import { Button, Card, Flex, Space, Typography, Tag, message, Modal, Select } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
-import { appStore, nanoid } from '../store';
+import { appStore } from '../store';
 import type { Box, Dataset } from '../types';
+import { ImageAnnotator } from '../components/ImageAnnotator';
+
+// 预置的异常类型
+const PRESET_EXCEPTION_TYPES = ['图文不匹配', '文本重叠', '黑屏', '白屏'];
 
 export default function LabelingPage() {
   const params = useParams();
   const navigate = useNavigate();
   const datasetId = params.datasetId || '';
+
   const dataset = useMemo<Dataset | undefined>(() => {
     return appStore.getState().datasets.find((d) => d.id === datasetId);
   }, [datasetId]);
 
   const [index, setIndex] = useState(0);
+  const [, forceUpdate] = useState(0);
   const image = dataset?.images[index];
-  const [boxes, setBoxes] = useState<Box[]>(image ? appStore.getImageBoxes(image.id) : []);
-  const drawingStartRef = useRef<null | { startX: number; startY: number }>(null);
-  const tempBoxRef = useRef<Box | null>(null);
-  const previewRef = useRef<HTMLDivElement | null>(null);
-  const rafIdRef = useRef<number | null>(null);
-  const imgRef = useRef<HTMLImageElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const contentRef = useRef<HTMLDivElement | null>(null);
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const miniRef = useRef<HTMLDivElement | null>(null);
-  const miniDraggingRef = useRef<boolean>(false);
-  const [scale, setScale] = useState(1);
-  const [viewTick, setViewTick] = useState(0);
-  const [containerH, setContainerH] = useState<number>(500);
-  const [baseW, setBaseW] = useState<number>(0);
-  const [baseH, setBaseH] = useState<number>(0);
 
-  const recomputeLayout = () => {
-    if (!containerRef.current) return;
-    const top = containerRef.current.getBoundingClientRect().top;
-    const h = Math.max(200, window.innerHeight - top);
-    setContainerH(h);
-    if (imgRef.current) {
-      const natW = imgRef.current.naturalWidth || 1;
-      const natH = imgRef.current.naturalHeight || 1;
-      const cw = containerRef.current.clientWidth || 1;
-      const ch = h;
-      const fit = (ch / natH) || 1; // 高度 100% 适配为基准
-      setBaseW(natW * fit);
-      setBaseH(natH * fit);
-    }
+  // 异常类型管理
+  const [exceptionTypes, setExceptionTypes] = useState<string[]>(PRESET_EXCEPTION_TYPES);
+  const [selectedExceptionType, setSelectedExceptionType] = useState<string>(PRESET_EXCEPTION_TYPES[0]);
+  const [showAnnotator, setShowAnnotator] = useState(false);
+
+  // 订阅 store 变化
+  useEffect(() => {
+    const unsub = appStore.subscribe(() => forceUpdate(v => v + 1));
+    return () => unsub();
+  }, []);
+
+  // 切换图片时更新状态
+  useEffect(() => {
+    setShowAnnotator(false);
+    // 稍微延迟一下让组件重新挂载
+    setTimeout(() => setShowAnnotator(true), 100);
+  }, [index, image?.id]);
+
+  const handleSave = (boxes: Box[]) => {
+    if (!image) return;
+    appStore.setImageBoxes(image.id, boxes);
+    message.success('标注已保存');
+    setShowAnnotator(false);
+    // 稍微延迟再显示,确保状态更新
+    setTimeout(() => setShowAnnotator(true), 100);
   };
 
-  useEffect(() => {
-    recomputeLayout();
-    const onResize = () => recomputeLayout();
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datasetId, index]);
+  const handleNext = () => {
+    if (!dataset) return;
+    const next = (index + 1) % dataset.images.length;
+    setIndex(next);
+  };
+
+  const handlePrev = () => {
+    if (!dataset) return;
+    const prev = (index - 1 + dataset.images.length) % dataset.images.length;
+    setIndex(prev);
+  };
+
+  const handleExport = () => {
+    if (!image) return;
+    const exportData = {
+      dataset: dataset?.name,
+      image: image.filename,
+      exceptionType: selectedExceptionType,
+      boxes: appStore.getImageBoxes(image.id),
+    };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${image.filename}-annotations.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    message.success('导出成功');
+  };
+
+  const handleAddExceptionType = () => {
+    Modal.confirm({
+      title: '新增异常类型',
+      content: (
+        <input
+          id="new-exception-type"
+          type="text"
+          placeholder="请输入异常类型名称"
+          style={{
+            width: '100%',
+            padding: '8px',
+            border: '1px solid #d9d9d9',
+            borderRadius: '4px',
+          }}
+        />
+      ),
+      onOk: () => {
+        const input = document.getElementById('new-exception-type') as HTMLInputElement;
+        const newType = input?.value?.trim();
+        if (newType && !exceptionTypes.includes(newType)) {
+          setExceptionTypes([...exceptionTypes, newType]);
+          setSelectedExceptionType(newType);
+          message.success(`已添加异常类型: ${newType}`);
+        }
+      },
+    });
+  };
+
+  const currentBoxes = image ? appStore.getImageBoxes(image.id) : [];
 
   return (
-    <Space direction="vertical" size="large" className="label-page">
+    <Space direction="vertical" size="large" className="label-page" style={{ width: '100%' }}>
       <Typography.Title level={3} className="label-title">
-        图片标注
+        图片标注 - React Image Annotate 集成演示
       </Typography.Title>
+
       <Card>
         {!dataset ? (
           <Typography.Text>请选择数据集后再进行标注。</Typography.Text>
         ) : dataset.images.length === 0 ? (
-          <Typography.Text>当前数据集暂无图片，请先导入图片。</Typography.Text>
+          <Typography.Text>当前数据集暂无图片,请先导入图片。</Typography.Text>
         ) : (
-          <Flex gap={16} vertical className="label-flex">
+          <Flex gap={16} vertical>
+            {/* 顶部工具栏 */}
             <Space wrap>
-              <Button
-                type="primary"
-                onClick={() => {
-                  if (!image) return;
-                  appStore.setImageBoxes(image.id, boxes);
-                  message.success('已保存');
-                }}
-              >
-                保存标注
+              <Select
+                value={selectedExceptionType}
+                onChange={setSelectedExceptionType}
+                style={{ width: 200 }}
+                options={exceptionTypes.map(t => ({ label: t, value: t }))}
+                placeholder="选择异常类型"
+              />
+              <Button onClick={handleAddExceptionType}>
+                新增异常类型
               </Button>
-              <Button
-                disabled={boxes.length === 0}
-                onClick={() => {
-                  if (!image || boxes.length === 0) return;
-                  const next = boxes.slice(0, -1);
-                  setBoxes(next);
-                  appStore.setImageBoxes(image.id, next);
-                }}
-              >
-                撤销上一个
-              </Button>
-              <Button
-                danger
-                disabled={boxes.length === 0}
-                onClick={() => {
-                  if (!image || boxes.length === 0) return;
-                  setBoxes([]);
-                  appStore.setImageBoxes(image.id, []);
-                }}
-              >
-                清空标注
-              </Button>
-              <Space size={8}>
-                <Button
-                  onClick={() => {
-                    if (!containerRef.current || !contentRef.current) return;
-                    const container = containerRef.current;
-                    const rect = container.getBoundingClientRect();
-                    const centerX = container.scrollLeft + rect.width / 2;
-                    const centerY = container.scrollTop + rect.height / 2;
-                    const set = (next: number) => {
-                      const baseW = contentRef.current!.offsetWidth || 1;
-                      const baseH = contentRef.current!.offsetHeight || 1;
-                      const prev = scale;
-                      const clamped = Math.min(8, Math.max(0.1, next));
-                      setScale(clamped);
-                      requestAnimationFrame(() => {
-                        const ratioX = centerX / (baseW * prev);
-                        const ratioY = centerY / (baseH * prev);
-                        container.scrollLeft = ratioX * (baseW * clamped) - rect.width / 2;
-                        container.scrollTop = ratioY * (baseH * clamped) - rect.height / 2;
-                        setViewTick((v) => v + 1);
-                      });
-                    };
-                    set(scale * 0.9);
-                  }}
-                >
-                  缩小
-                </Button>
-                <Button
-                  onClick={() => {
-                    if (!containerRef.current || !contentRef.current) return;
-                    const container = containerRef.current;
-                    const rect = container.getBoundingClientRect();
-                    const baseW = contentRef.current.offsetWidth || 1;
-                    const baseH = contentRef.current.offsetHeight || 1;
-                    setScale(1);
-                    requestAnimationFrame(() => {
-                      container.scrollLeft = 0;
-                      container.scrollTop = 0;
-                      setViewTick((v) => v + 1);
-                    });
-                  }}
-                >
-                  100%
-                </Button>
-                <Button
-                  onClick={() => {
-                    if (!containerRef.current || !contentRef.current) return;
-                    const container = containerRef.current;
-                    const rect = container.getBoundingClientRect();
-                    const baseW = contentRef.current.offsetWidth || 1;
-                    const baseH = contentRef.current.offsetHeight || 1;
-                    const centerX = container.scrollLeft + rect.width / 2;
-                    const centerY = container.scrollTop + rect.height / 2;
-                    const prev = scale;
-                    const next = 2;
-                    setScale(next);
-                    requestAnimationFrame(() => {
-                      const ratioX = centerX / (baseW * prev);
-                      const ratioY = centerY / (baseH * prev);
-                      container.scrollLeft = ratioX * (baseW * next) - rect.width / 2;
-                      container.scrollTop = ratioY * (baseH * next) - rect.height / 2;
-                      setViewTick((v) => v + 1);
-                    });
-                  }}
-                >
-                  200%
-                </Button>
-                <Button
-                  onClick={() => {
-                    if (!containerRef.current || !contentRef.current) return;
-                    const container = containerRef.current;
-                    const rect = container.getBoundingClientRect();
-                    const centerX = container.scrollLeft + rect.width / 2;
-                    const centerY = container.scrollTop + rect.height / 2;
-                    const set = (next: number) => {
-                      const baseW = contentRef.current!.offsetWidth || 1;
-                      const baseH = contentRef.current!.offsetHeight || 1;
-                      const prev = scale;
-                      const clamped = Math.min(8, Math.max(0.1, next));
-                      setScale(clamped);
-                      requestAnimationFrame(() => {
-                        const ratioX = centerX / (baseW * prev);
-                        const ratioY = centerY / (baseH * prev);
-                        container.scrollLeft = ratioX * (baseW * clamped) - rect.width / 2;
-                        container.scrollTop = ratioY * (baseH * clamped) - rect.height / 2;
-                        setViewTick((v) => v + 1);
-                      });
-                    };
-                    set(scale * 1.1);
-                  }}
-                >
-                  放大
-                </Button>
-                <Button
-                  onClick={() => {
-                    if (!containerRef.current) return;
-                    setScale(1);
-                    requestAnimationFrame(() => {
-                      containerRef.current!.scrollLeft = 0;
-                      containerRef.current!.scrollTop = 0;
-                      setViewTick((v) => v + 1);
-                    });
-                  }}
-                >
-                  重置视图
-                </Button>
-              </Space>
-              <Button
-                onClick={() => {
-                  if (!dataset) return;
-                  const next = (index + 1) % dataset.images.length;
-                  if (image) appStore.setImageBoxes(image.id, boxes);
-                  setIndex(next);
-                }}
-              >
-                下一张
-              </Button>
-              <Button
-                onClick={() => {
-                  if (!dataset) return;
-                  const prev = (index - 1 + dataset.images.length) % dataset.images.length;
-                  if (image) appStore.setImageBoxes(image.id, boxes);
-                  setIndex(prev);
-                }}
-              >
+              <Button onClick={handlePrev}>
                 上一张
               </Button>
-              <Button
-                onClick={() => {
-                  if (!image) return;
-                  const data = appStore.getState();
-                  const exportData = {
-                    dataset: dataset?.name,
-                    image: image.filename,
-                    boxes: appStore.getImageBoxes(image.id),
-                  };
-                  const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-                    type: 'application/json',
-                  });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `${image.filename}-annotations.json`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-              >
-                导出当前标注
+              <Button onClick={handleNext}>
+                下一张
               </Button>
-              <Tag>第 {index + 1} / {dataset.images.length} 张</Tag>
+              <Button onClick={handleExport}>
+                导出标注
+              </Button>
+              <Tag color="blue">
+                第 {index + 1} / {dataset.images.length} 张
+              </Tag>
+              <Tag color="green">
+                当前已标注 {currentBoxes.length} 个框
+              </Tag>
             </Space>
-            <div ref={wrapperRef} className="label-wrapper full-height">
-              <div
-                ref={containerRef}
-                className="label-container"
-                
-              onWheel={(e) => {
-                if (!(e.ctrlKey || e.metaKey)) return; // ctrl/cmd + 滚轮缩放
-                if (!contentRef.current) return;
-                e.preventDefault();
-                const factor = e.deltaY < 0 ? 1.1 : 0.9;
-                const prev = scale;
-                const next = Math.min(8, Math.max(0.1, prev * factor));
-                const container = containerRef.current!;
-                const rect = container.getBoundingClientRect();
-                const baseW = contentRef.current.offsetWidth || 1;
-                const baseH = contentRef.current.offsetHeight || 1;
-                const pointerX = container.scrollLeft + (e.clientX - rect.left);
-                const pointerY = container.scrollTop + (e.clientY - rect.top);
-                const ratioX = pointerX / (baseW * prev);
-                const ratioY = pointerY / (baseH * prev);
-                setScale(next);
-                requestAnimationFrame(() => {
-                  container.scrollLeft = ratioX * (baseW * next) - (e.clientX - rect.left);
-                  container.scrollTop = ratioY * (baseH * next) - (e.clientY - rect.top);
-                  setViewTick((v) => v + 1);
-                });
-              }}
-              onScroll={() => {
-                if (!containerRef.current) return;
-                if ((containerRef.current as any)._rafing) return;
-                (containerRef.current as any)._rafing = true;
-                requestAnimationFrame(() => {
-                  (containerRef.current as any)._rafing = false;
-                  setViewTick((v) => v + 1);
-                });
-              }}
-                onMouseDown={(e) => {
-                if (!imgRef.current || !contentRef.current) return;
-                e.preventDefault();
-                const rect = contentRef.current.getBoundingClientRect();
-                const baseW = contentRef.current.offsetWidth || 1;
-                const baseH = contentRef.current.offsetHeight || 1;
-                const natW = imgRef.current.naturalWidth || 1;
-                const natH = imgRef.current.naturalHeight || 1;
-                const sx = ((e.clientX - rect.left) / scale) / baseW * natW;
-                const sy = ((e.clientY - rect.top) / scale) / baseH * natH;
-                const startX = sx;
-                const startY = sy;
-                drawingStartRef.current = { startX, startY };
-                tempBoxRef.current = { id: 'temp', x: startX, y: startY, width: 0, height: 0 };
 
-                if (previewRef.current) {
-                  previewRef.current.style.display = 'block';
-                }
-              }}
-                onMouseMove={(e) => {
-                if (!drawingStartRef.current || !imgRef.current || !contentRef.current) return;
-                const rect = contentRef.current.getBoundingClientRect();
-                const baseW = contentRef.current.offsetWidth || 1;
-                const baseH = contentRef.current.offsetHeight || 1;
-                const natW = imgRef.current.naturalWidth || 1;
-                const natH = imgRef.current.naturalHeight || 1;
-                const currX = ((e.clientX - rect.left) / scale) / baseW * natW;
-                const currY = ((e.clientY - rect.top) / scale) / baseH * natH;
-                const x = Math.min(drawingStartRef.current.startX, currX);
-                const y = Math.min(drawingStartRef.current.startY, currY);
-                const width = Math.abs(currX - drawingStartRef.current.startX);
-                const height = Math.abs(currY - drawingStartRef.current.startY);
-                tempBoxRef.current = { id: 'temp', x, y, width, height };
-
-                if (!rafIdRef.current) {
-                  rafIdRef.current = requestAnimationFrame(() => {
-                    rafIdRef.current = null;
-                    if (!previewRef.current || !imgRef.current || !contentRef.current || !tempBoxRef.current) return;
-                    const baseW2 = contentRef.current.offsetWidth || 1;
-                    const baseH2 = contentRef.current.offsetHeight || 1;
-                    const sx = baseW2 / (imgRef.current.naturalWidth || 1);
-                    const sy = baseH2 / (imgRef.current.naturalHeight || 1);
-                    const style = previewRef.current.style;
-                    style.left = `${tempBoxRef.current.x * sx}px`;
-                    style.top = `${tempBoxRef.current.y * sy}px`;
-                    style.width = `${tempBoxRef.current.width * sx}px`;
-                    style.height = `${tempBoxRef.current.height * sy}px`;
-                  });
-                }
-              }}
-                onMouseUp={() => {
-                const committed = tempBoxRef.current;
-                drawingStartRef.current = null;
-                tempBoxRef.current = null;
-                if (previewRef.current) {
-                  previewRef.current.style.display = 'none';
-                }
-                if (committed && committed.width >= 2 && committed.height >= 2) {
-                  setBoxes((prev) => [...prev, { ...committed, id: nanoid(8) }]);
-                }
-              }}
-                onMouseLeave={() => {
-                drawingStartRef.current = null;
-                tempBoxRef.current = null;
-                if (previewRef.current) previewRef.current.style.display = 'none';
-              }}
-              >
-              <div
-                ref={contentRef}
-                className="label-content"
-                style={{ width: baseW, height: baseH, transform: `scale(${scale})` }}
-              >
-                {image && (
-                  <img
-                    ref={imgRef}
-                    src={image.url}
-                    alt={image.filename}
-                    className="label-image"
-                    draggable={false}
-                    onLoad={() => {
-                      if (!image) return;
-                      setBoxes(appStore.getImageBoxes(image.id));
-                      requestAnimationFrame(() => {
-                        recomputeLayout();
-                        if (containerRef.current) {
-                          containerRef.current.scrollLeft = 0;
-                          containerRef.current.scrollTop = 0;
-                          setScale(1);
-                          setViewTick((v) => v + 1);
-                        }
-                      });
-                    }}
-                  />
-                )}
-                {/* boxes overlay */}
-                {image && imgRef.current && (
-                  <div className="label-overlay">
-                    {/* temp preview rectangle updated via rAF without React state thrash */}
-                    <div ref={previewRef} className="label-preview" />
-                    {(() => {
-                      const baseW = contentRef.current?.offsetWidth || 1;
-                      const baseH = contentRef.current?.offsetHeight || 1;
-                      const natW = imgRef.current!.naturalWidth || 1;
-                      const natH = imgRef.current!.naturalHeight || 1;
-                      const sx = baseW / natW;
-                      const sy = baseH / natH;
-                      return boxes.map((b) => {
-                        const style = {
-                          left: b.x * sx,
-                          top: b.y * sy,
-                          width: b.width * sx,
-                          height: b.height * sy,
-                        } as React.CSSProperties;
-                        return (
-                          <div key={b.id} className="label-box" style={style} />
-                        );
-                      });
-                    })()}
-                  </div>
-                )}
-              </div>
-              </div>
-
-              {/* Minimap overlay in bottom-right inside the container wrapper */}
-              {image && (
-                <div className="label-minimap-wrapper">
-                  {(() => {
-                    const mmW = 180;
-                    const baseW = contentRef.current?.offsetWidth || 1;
-                    const baseH = contentRef.current?.offsetHeight || 1;
-                    const mmH = Math.max(40, (baseH / baseW) * mmW);
-                    const contentWScaled = baseW * scale;
-                    const contentHScaled = baseH * scale;
-                    const container = containerRef.current;
-                    const scrollLeft = container?.scrollLeft || 0;
-                    const scrollTop = container?.scrollTop || 0;
-                    const clientW = container?.clientWidth || 1;
-                    const clientH = container?.clientHeight || 1;
-                    const viewLeft = (scrollLeft / contentWScaled) * mmW;
-                    const viewTop = (scrollTop / contentHScaled) * mmH;
-                    const viewW = (clientW / contentWScaled) * mmW;
-                    const viewH = (clientH / contentHScaled) * mmH;
-                    return (
-                      <div
-                        ref={miniRef}
-                        className="label-minimap"
-                        style={{ width: mmW, height: mmH, backgroundImage: `url(${image.url})` }}
-                        onMouseMove={(e) => {
-                          if (!miniDraggingRef.current || !miniRef.current || !containerRef.current || !contentRef.current) return;
-                          const rect = miniRef.current.getBoundingClientRect();
-                          const x = e.clientX - rect.left;
-                          const y = e.clientY - rect.top;
-                          const fracX = Math.min(1, Math.max(0, x / rect.width));
-                          const fracY = Math.min(1, Math.max(0, y / rect.height));
-                          const baseW2 = contentRef.current.offsetWidth || 1;
-                          const baseH2 = contentRef.current.offsetHeight || 1;
-                          const targetLeft = fracX * (baseW2 * scale) - (containerRef.current.clientWidth / 2);
-                          const targetTop = fracY * (baseH2 * scale) - (containerRef.current.clientHeight / 2);
-                          containerRef.current.scrollLeft = Math.max(0, Math.min(targetLeft, baseW2 * scale - containerRef.current.clientWidth));
-                          containerRef.current.scrollTop = Math.max(0, Math.min(targetTop, baseH2 * scale - containerRef.current.clientHeight));
-                          setViewTick((v) => v + 1);
-                        }}
-                        onMouseLeave={() => {
-                          miniDraggingRef.current = false;
-                        }}
-                        onMouseUp={() => {
-                          miniDraggingRef.current = false;
-                        }}
-                        onMouseDown={(e) => {
-                          // start dragging only on viewport rectangle; but allow anywhere for convenience
-                          miniDraggingRef.current = true;
-                        }}
-                      >
-                        <div
-                          onMouseDown={(e) => {
-                            e.stopPropagation();
-                            miniDraggingRef.current = true;
-                          }}
-                          className="label-minimap-viewport"
-                          style={{ left: viewLeft, top: viewTop, width: Math.max(10, viewW), height: Math.max(10, viewH) }}
-                        />
-                      </div>
-                    );
-                  })()}
+            {/* 标注编辑器 */}
+            <div style={{ height: '70vh', border: '1px solid #d9d9d9', borderRadius: '8px', overflow: 'hidden' }}>
+              {image && showAnnotator ? (
+                <ImageAnnotator
+                  key={`${image.id}-${selectedExceptionType}`}
+                  imageUrl={image.url}
+                  imageName={image.filename}
+                  exceptionType={selectedExceptionType}
+                  exceptionTypes={exceptionTypes}
+                  initialRegions={currentBoxes}
+                  onSave={handleSave}
+                  naturalWidth={image.width}
+                  naturalHeight={image.height}
+                />
+              ) : (
+                <div style={{
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: '#f5f5f5'
+                }}>
+                  <Typography.Text type="secondary">加载中...</Typography.Text>
                 </div>
               )}
             </div>
 
-            
+            {/* 使用说明 */}
+            <Card size="small" title="使用说明" style={{ background: '#f0f7ff' }}>
+              <Space direction="vertical">
+                <Typography.Text>
+                  • 在图片上拖拽鼠标绘制矩形框进行标注
+                </Typography.Text>
+                <Typography.Text>
+                  • 支持绘制多个框(满足会议需求)
+                </Typography.Text>
+                <Typography.Text>
+                  • 点击右上角 "完成" 按钮保存标注
+                </Typography.Text>
+                <Typography.Text>
+                  • 可以选择不同的异常类型进行分类标注
+                </Typography.Text>
+                <Typography.Text type="warning">
+                  • 当前使用 react-image-annotate 库,坐标自动转换为像素值
+                </Typography.Text>
+              </Space>
+            </Card>
           </Flex>
         )}
       </Card>
     </Space>
   );
 }
-
-
