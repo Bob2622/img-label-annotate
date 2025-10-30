@@ -9,7 +9,6 @@ export default defineConfig({
   },
   define: {
     'process.env': {},
-    'process.cwd': '() => "/"',
     'process.platform': '"browser"',
     'process.version': '"v16.0.0"'
   }

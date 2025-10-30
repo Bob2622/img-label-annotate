@@ -1,10 +1,581 @@
+// 导入设计系统
+@import './design-system.scss';
+
+// 全局重置
 html, body, #root {
   height: 100%;
   margin: 0;
+  padding: 0;
 }
 
 * {
   box-sizing: border-box;
 }
 
+// 应用设计系统的全局样式已在 design-system.scss 中定义
+// 包括:
+// - 全局重置(body, scrollbar)
+// - 动画定义(fadeIn, slideInRight, pulse, shimmer)
+// - 工具类(fade-in, slide-in-right, modern-card, modern-button, etc.)
 
+// Ant Design Modal 暗色主题覆盖
+.ant-modal {
+  .ant-modal-content {
+    background: rgba(20, 24, 36, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+
+  .ant-modal-header {
+    background: transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px 24px;
+
+    .ant-modal-title {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 18px;
+      font-weight: 600;
+    }
+  }
+
+  .ant-modal-body {
+    color: rgba(255, 255, 255, 0.9) !important;
+    padding: 24px;
+  }
+
+  // Modal.confirm 特殊样式
+  .ant-modal-confirm-body {
+    .ant-modal-confirm-title {
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
+
+    .ant-modal-confirm-content {
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
+  }
+
+  .ant-modal-footer {
+    background: transparent;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 16px 24px;
+
+    .ant-btn {
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+
+      &:hover {
+        transform: translateY(-1px);
+      }
+    }
+
+    .ant-btn-default {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+      color: rgba(255, 255, 255, 0.9) !important;
+
+      &:hover,
+      &:focus {
+        background: rgba(255, 255, 255, 0.15) !important;
+        border-color: rgba(91, 156, 255, 0.5) !important;
+        color: rgba(30, 30, 30, 0.9) !important;
+      }
+    }
+
+    .ant-btn-primary {
+      background: #5b9cff !important;
+      border-color: #5b9cff !important;
+      color: white !important;
+
+      &:hover,
+      &:focus {
+        background: #7db1ff !important;
+        border-color: #7db1ff !important;
+        color: white !important;
+      }
+    }
+
+    .ant-btn-dangerous {
+      background: #f44336 !important;
+      border-color: #f44336 !important;
+      color: white !important;
+
+      &:hover,
+      &:focus {
+        background: #f55a4e !important;
+        border-color: #f55a4e !important;
+        color: white !important;
+      }
+    }
+  }
+
+  .ant-modal-close {
+    color: rgba(255, 255, 255, 0.5);
+
+    &:hover {
+      color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  // Input 样式
+  .ant-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+
+    &:focus,
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: #5b9cff;
+      box-shadow: 0 0 0 3px rgba(91, 156, 255, 0.15);
+    }
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  // Tabs 样式
+  .ant-tabs {
+    .ant-tabs-nav {
+      &::before {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+      }
+    }
+
+    .ant-tabs-tab {
+      color: rgba(255, 255, 255, 0.5);
+
+      &:hover {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      &.ant-tabs-tab-active {
+        .ant-tabs-tab-btn {
+          color: #5b9cff;
+        }
+      }
+    }
+
+    .ant-tabs-ink-bar {
+      background: #5b9cff;
+    }
+  }
+
+  // List 样式
+  .ant-list {
+    .ant-list-item {
+      border-bottom-color: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.7);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
+    }
+
+    .ant-list-item-meta-title {
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
+
+    .ant-list-item-meta-description {
+      color: rgba(255, 255, 255, 0.6) !important;
+    }
+
+    .ant-list-item-action {
+      > li {
+        color: rgba(255, 255, 255, 0.7);
+      }
+    }
+  }
+
+  // Progress 样式
+  .ant-progress {
+    .ant-progress-text {
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+}
+
+// Popconfirm 样式
+.ant-popconfirm {
+  .ant-popover-inner {
+    background: rgba(20, 24, 36, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .ant-popover-message-title {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  .ant-popover-inner-content {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  .ant-popover-message {
+    color: rgba(255, 255, 255, 0.9) !important;
+
+    .ant-popover-message-title {
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
+  }
+
+  .ant-popover-arrow-content {
+    &::before {
+      background: rgba(20, 24, 36, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  .ant-btn {
+    border-radius: 8px;
+    font-weight: 500;
+
+    &.ant-btn-default {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.7);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(91, 156, 255, 0.5);
+        color: rgba(255, 255, 255, 0.9);
+      }
+    }
+
+    &.ant-btn-primary {
+      background: #f44336;
+      border-color: #f44336;
+
+      &:hover {
+        background: #f55a4e;
+        border-color: #f55a4e;
+      }
+    }
+  }
+}
+
+// Popover 通用样式(包括 Popconfirm)
+.ant-popover {
+  .ant-popover-inner {
+    background: rgba(20, 24, 36, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .ant-popover-inner-content {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  .ant-popover-message {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  .ant-popover-message-title {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+}
+
+// Message 样式
+.ant-message {
+  .ant-message-notice-content {
+    background: rgba(20, 24, 36, 0.98) !important;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    color: rgba(255, 255, 255, 0.9) !important;
+    border-radius: 12px;
+    padding: 12px 20px;
+  }
+
+  .ant-message-notice {
+    .ant-message-success,
+    .ant-message-error,
+    .ant-message-info,
+    .ant-message-warning,
+    .ant-message-loading {
+      .anticon {
+        color: inherit;
+      }
+    }
+  }
+
+  .ant-message-custom-content {
+    color: rgba(255, 255, 255, 0.9) !important;
+
+    > span {
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
+  }
+}
+
+// Button 全局样式
+.ant-btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &.ant-btn-default {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.9) !important;
+
+    &:hover,
+    &:focus {
+      background: rgba(255, 255, 255, 0.15) !important;
+      border-color: rgba(91, 156, 255, 0.5);
+      color: rgba(30, 30, 30, 0.9) !important;
+
+      > span {
+        color: rgba(30, 30, 30, 0.9) !important;
+      }
+    }
+
+    > span {
+      color: inherit !important;
+    }
+  }
+
+  &.ant-btn-primary {
+    background: #5b9cff;
+    border-color: #5b9cff;
+    color: white !important;
+
+    &:hover,
+    &:focus {
+      background: #7db1ff;
+      border-color: #7db1ff;
+      color: white !important;
+    }
+
+    > span {
+      color: inherit !important;
+    }
+  }
+
+  &.ant-btn-text {
+    color: rgba(255, 255, 255, 0.7) !important;
+
+    &:hover,
+    &:focus {
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.9) !important;
+    }
+
+    > span {
+      color: inherit !important;
+    }
+  }
+
+  &.ant-btn-dangerous,
+  &.ant-btn-danger {
+    background: #f44336;
+    border-color: #f44336;
+    color: white !important;
+
+    &:hover,
+    &:focus {
+      background: #f55a4e;
+      border-color: #f55a4e;
+      color: white !important;
+    }
+
+    > span {
+      color: inherit !important;
+    }
+  }
+
+  .anticon {
+    color: inherit;
+  }
+}
+
+// Dropdown 样式
+.ant-dropdown {
+  .ant-dropdown-menu {
+    background: rgba(20, 24, 36, 0.98);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .ant-dropdown-menu-item {
+    color: rgba(255, 255, 255, 0.9) !important;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    &.ant-dropdown-menu-item-danger {
+      color: #f44336 !important;
+
+      &:hover {
+        background: rgba(244, 67, 54, 0.1);
+      }
+    }
+
+    .anticon {
+      color: inherit !important;
+    }
+  }
+
+  .ant-dropdown-menu-title-content {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+}
+
+// Upload 组件样式
+.ant-upload {
+  color: rgba(255, 255, 255, 0.9) !important;
+
+  .ant-upload-text {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  .ant-upload-hint {
+    color: rgba(255, 255, 255, 0.5) !important;
+  }
+}
+
+// Select 下拉框样式
+.ant-select-dropdown {
+  background: rgba(20, 24, 36, 0.98);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  .ant-select-item {
+    color: rgba(255, 255, 255, 0.9);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    &.ant-select-item-option-selected {
+      background: rgba(91, 156, 255, 0.2);
+    }
+  }
+}
+
+.ant-select {
+  .ant-select-selector {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  .ant-select-selection-placeholder {
+    color: rgba(255, 255, 255, 0.3) !important;
+  }
+
+  .ant-select-arrow {
+    color: rgba(255, 255, 255, 0.5) !important;
+  }
+}
+
+// Checkbox 样式
+.ant-checkbox-wrapper {
+  color: rgba(255, 255, 255, 0.9) !important;
+
+  .ant-checkbox {
+    .ant-checkbox-inner {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    &.ant-checkbox-checked {
+      .ant-checkbox-inner {
+        background: #5b9cff;
+        border-color: #5b9cff;
+      }
+    }
+  }
+}
+
+// Radio 样式
+.ant-radio-wrapper {
+  color: rgba(255, 255, 255, 0.9) !important;
+
+  .ant-radio {
+    .ant-radio-inner {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    &.ant-radio-checked {
+      .ant-radio-inner {
+        border-color: #5b9cff;
+
+        &::after {
+          background: #5b9cff;
+        }
+      }
+    }
+  }
+}
+
+// Switch 样式
+.ant-switch {
+  background: rgba(255, 255, 255, 0.15);
+
+  &.ant-switch-checked {
+    background: #5b9cff;
+  }
+}
+
+// Form 表单项标签
+.ant-form-item-label {
+  > label {
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+}
+
+// Textarea 样式
+.ant-input-textarea {
+  .ant-input {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+
+    &:focus,
+    &:hover {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border-color: #5b9cff !important;
+    }
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.3) !important;
+    }
+  }
+}
+
+// Divider 分割线
+.ant-divider {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+// Tag 标签
+.ant-tag {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+// Empty 空状态
+.ant-empty {
+  .ant-empty-description {
+    color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+// Spin 加载中
+.ant-spin {
+  color: #5b9cff;
+
+  .ant-spin-text {
+    color: rgba(255, 255, 255, 0.7);
+  }
+}

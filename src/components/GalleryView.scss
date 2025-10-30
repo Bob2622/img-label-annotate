@@ -1,0 +1,155 @@
+@import '../styles/design-system-dark.scss';
+
+.gallery-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+
+  // 工具栏
+  .gallery-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border-subtle);
+
+    .toolbar-filters {
+      display: flex;
+      gap: var(--space-3);
+
+      .filter-select {
+        @extend .modern-input;
+        min-width: 150px;
+        height: 36px;
+        cursor: pointer;
+      }
+    }
+
+    .toolbar-stats {
+      display: flex;
+      gap: var(--space-6);
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+
+      .stat-item {
+        strong {
+          color: var(--text-primary);
+          font-weight: var(--font-semibold);
+          margin-left: var(--space-1);
+        }
+      }
+    }
+  }
+
+  // 图片网格
+  .gallery-grid {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-4);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--space-4);
+    align-content: start;
+    grid-auto-rows: auto; // 自动行高
+  }
+
+  // 图片卡片
+  .image-card {
+    background: var(--bg-panel);
+    border: 2px solid transparent;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all var(--duration-base) var(--ease-out);
+    animation: fadeIn var(--duration-base) var(--ease-out);
+
+    &:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: var(--shadow-lg);
+    }
+
+    // 状态边框
+    &.status-correct {
+      border-color: var(--color-success);
+    }
+
+    &.status-incorrect {
+      border-color: var(--color-error);
+    }
+
+    &.status-unlabeled {
+      border-color: var(--border-medium);
+    }
+
+    .image-wrapper {
+      position: relative;
+      width: 100%;
+      padding-bottom: 75%; // 4:3 宽高比
+      background: var(--bg-canvas);
+      overflow: hidden;
+
+      img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+    }
+
+    .image-info {
+      padding: var(--space-3);
+
+      .image-name {
+        font-size: var(--text-sm);
+        color: var(--text-primary);
+        margin-bottom: var(--space-2);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .image-meta {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-size: var(--text-xs);
+
+        .status-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: var(--space-1);
+          padding: 2px var(--space-2);
+          border-radius: var(--radius-full);
+          font-weight: var(--font-medium);
+
+          &.status-success {
+            background: var(--color-success-bg);
+            color: var(--color-success);
+          }
+
+          &.status-error {
+            background: var(--color-error-bg);
+            color: var(--color-error);
+          }
+
+          &.status-default {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-tertiary);
+          }
+        }
+
+        .box-count {
+          color: var(--text-tertiary);
+        }
+      }
+    }
+  }
+
+  // 空状态
+  .empty-state {
+    @extend .empty-state;
+  }
+}

@@ -1,93 +1,416 @@
-.label-wrapper {
-  position: relative;
-}
+@import '../styles/design-system.scss';
 
+// 标注页面容器
 .label-page {
   width: 100%;
-  overflow: hidden;
+  animation: fadeIn var(--duration-base) var(--ease-out);
 }
 
-.label-flex {
-  height: calc(100vh - 140px);
-}
-
-.full-height {
-  height: 100%;
-}
-
-.label-container {
-  position: relative;
-  overflow: auto;
-  border-radius: 8px;
-  border: 1px solid #f0f0f0;
-  cursor: crosshair;
-  user-select: none;
-  background: #fafafa;
-}
-
-.label-content {
-  position: relative;
-  transform-origin: top left;
-}
-
-.label-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-
-.label-overlay {
-  position: absolute;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-}
-
-.label-preview {
-  position: absolute;
-  display: none;
-  border: 1px dashed #1677ff;
-  background: rgba(22, 119, 255, 0.1);
-  border-radius: 4px;
-}
-
-.label-box {
-  position: absolute;
-  border: 2px solid #1677ff;
-  background: rgba(22, 119, 255, 0.1);
-  border-radius: 4px;
-}
-
+// 标注页面标题
 .label-title {
-  margin: 0;
+  margin: 0 0 var(--spacing-lg) 0;
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  background: var(--color-primary-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.label-minimap-wrapper {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+// 筛选侧边栏
+.label-sidebar {
+  .ant-card {
+    position: sticky;
+    top: var(--spacing-md);
+
+    .ant-card-head {
+      background: var(--color-primary-gradient);
+      border-bottom: none;
+
+      .ant-card-head-title {
+        color: var(--color-text-inverse);
+      }
+    }
+
+    .ant-form-item {
+      margin-bottom: var(--spacing-lg);
+
+      .ant-form-item-label {
+        padding-bottom: var(--spacing-xs);
+
+        label {
+          font-weight: 600;
+          color: var(--color-text-primary);
+          font-size: var(--text-sm);
+
+          &::after {
+            display: none;
+          }
+        }
+      }
+    }
+  }
 }
 
-.label-minimap {
+// 图片列表区域
+.label-list {
+  .ant-card {
+    .ant-card-extra {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+  }
+
+  // 表格增强
+  .ant-table {
+    .image-thumbnail {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      border-radius: var(--radius-md);
+      border: 2px solid var(--color-border-light);
+      transition: all var(--duration-base) var(--ease-out);
+      cursor: pointer;
+
+      &:hover {
+        transform: scale(1.5);
+        border-color: var(--color-primary);
+        box-shadow: var(--shadow-xl);
+        z-index: var(--z-popover);
+      }
+    }
+
+    // 状态标签样式
+    .status-tag {
+      &.status-unlabeled {
+        @extend .modern-tag;
+        background: var(--color-gray-200);
+        color: var(--color-gray-600);
+      }
+
+      &.status-correct {
+        @extend .modern-tag;
+        @extend .tag-success;
+      }
+
+      &.status-incorrect {
+        @extend .modern-tag;
+        @extend .tag-error;
+      }
+    }
+
+    // 操作按钮
+    .action-btn {
+      font-weight: 500;
+
+      &:hover {
+        transform: translateX(2px);
+      }
+    }
+  }
+}
+
+// 标注编辑器模态框
+.annotation-modal {
+  .ant-modal-header {
+    background: var(--color-primary-gradient);
+    padding: var(--spacing-lg) var(--spacing-xl);
+
+    .ant-modal-title {
+      color: var(--color-text-inverse);
+      font-size: var(--text-xl);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+  }
+
+  .ant-modal-body {
+    padding: var(--spacing-lg);
+    background: var(--color-bg-secondary);
+  }
+
+  .ant-modal-close {
+    color: var(--color-text-inverse);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+  }
+}
+
+// 标注编辑器布局
+.annotation-editor {
+  display: flex;
+  height: 75vh;
+  gap: var(--spacing-md);
+  overflow: hidden;
+
+  // 左侧图片编辑区
+  .editor-canvas-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+
+  // 右侧信息面板
+  .editor-info-panel {
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+
+    .ant-card {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+
+      .ant-card-body {
+        flex: 1;
+        overflow-y: auto;
+      }
+    }
+
+    // 表单增强
+    .annotation-form {
+      .ant-form-item {
+        margin-bottom: var(--spacing-md);
+
+        .ant-form-item-label {
+          padding-bottom: var(--spacing-xs);
+        }
+
+        .ant-form-item-extra {
+          font-size: var(--text-xs);
+          color: var(--color-text-tertiary);
+          margin-top: var(--spacing-xs);
+        }
+      }
+
+      // 操作按钮组
+      .form-actions {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-lg);
+
+        .ant-btn {
+          height: 48px;
+          font-size: var(--text-base);
+          font-weight: 600;
+          border-radius: var(--radius-lg);
+          transition: all var(--duration-base) var(--ease-out);
+
+          &.btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            color: var(--color-text-inverse);
+            box-shadow: var(--shadow-sm);
+
+            &:hover {
+              transform: translateY(-2px);
+              box-shadow: var(--shadow-md);
+            }
+          }
+
+          &.btn-danger {
+            &:hover {
+              transform: translateY(-2px);
+              box-shadow: var(--shadow-md);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// 异常类型管理
+.exception-type-selector {
   position: relative;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  border-radius: 8px;
-  border: 1px solid #f0f0f0;
-  background-color: #fff;
-  cursor: default;
+
+  .add-exception-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    transition: all var(--duration-base) var(--ease-bounce);
+
+    &:hover {
+      transform: rotate(90deg);
+      background: var(--color-primary);
+      color: var(--color-text-inverse);
+      border-color: var(--color-primary);
+    }
+  }
 }
 
-.label-minimap-viewport {
-  position: absolute;
-  border: 2px solid #1677ff;
-  background: rgba(22, 119, 255, 0.12);
-  cursor: grab;
-  border-radius: 4px;
+// 新增异常类型模态框
+.add-exception-modal {
+  .ant-modal-body {
+    padding: var(--spacing-xl);
+
+    .ant-input {
+      height: 48px;
+      font-size: var(--text-base);
+    }
+  }
 }
 
+// 标注进度指示器
+.labeling-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-full);
+
+  .progress-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--color-gray-200);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+
+    .progress-fill {
+      height: 100%;
+      background: var(--color-primary-gradient);
+      border-radius: var(--radius-full);
+      transition: width var(--duration-base) var(--ease-out);
+    }
+  }
+
+  .progress-text {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+  }
+}
+
+// 快捷键提示
+.keyboard-shortcuts {
+  position: fixed;
+  bottom: var(--spacing-lg);
+  left: var(--spacing-lg);
+  background: rgba(0, 0, 0, 0.8);
+  color: var(--color-text-inverse);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-xs);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(10px);
+  z-index: var(--z-tooltip);
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-out);
+
+  &:hover {
+    opacity: 1;
+  }
+
+  .shortcut-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin: var(--spacing-xs) 0;
+
+    kbd {
+      padding: 2px 6px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+    }
+  }
+}
+
+// 数据统计卡片
+.labeling-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+
+  .stat-item {
+    padding: var(--spacing-md);
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-md);
+    text-align: center;
+    transition: all var(--duration-base) var(--ease-out);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .stat-value {
+      font-size: var(--text-2xl);
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .stat-label {
+      font-size: var(--text-xs);
+      color: var(--color-text-secondary);
+    }
+  }
+}
+
+// 图片筛选标签
+.filter-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-sm);
+
+  .filter-tag {
+    @extend .modern-tag;
+    cursor: pointer;
+
+    &.active {
+      background: var(--color-primary);
+      color: var(--color-text-inverse);
+    }
+  }
+}
+
+// 批量操作栏
+.batch-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-xl);
+  border-top: 2px solid var(--color-primary);
+  transform: translateY(100%);
+  transition: transform var(--duration-base) var(--ease-out);
+  z-index: var(--z-fixed);
+
+  &.visible {
+    transform: translateY(0);
+  }
+
+  .batch-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+
+    .selected-count {
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+  }
+}

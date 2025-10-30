@@ -1,28 +1,277 @@
+@import './styles/design-system.scss';
+
+// 全局布局样式
 .app-layout {
   min-height: 100vh;
+  background: var(--color-bg-secondary);
 }
 
+// Logo 区域 - 应用渐变效果
 .app-logo {
   height: 64px;
-  margin: 16px;
-  color: #fff;
+  margin: var(--spacing-md);
+  color: var(--color-text-inverse);
   font-weight: 700;
-  font-size: 18px;
+  font-size: var(--text-xl);
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+
+  // 渐变背景效果
+  background: var(--color-primary-gradient);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all var(--duration-base) var(--ease-out);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    transition: left 0.5s;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+
+    &::before {
+      left: 100%;
+    }
+  }
 }
 
+// Header 区域
 .app-header {
-  // background driven by theme token via inline style previously
+  background: var(--color-bg-primary);
+  box-shadow: var(--shadow-sm);
+  border-bottom: 1px solid var(--color-border-light);
+  transition: box-shadow var(--duration-base) var(--ease-out);
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+  }
 }
 
+// 主内容区
 .app-content {
-  margin: 16px;
+  margin: var(--spacing-md);
+  animation: fadeIn var(--duration-base) var(--ease-out);
 }
 
 .app-content-inner {
-  padding: 24px;
+  padding: var(--spacing-lg);
   min-height: 360px;
+  background: var(--color-bg-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--duration-base) var(--ease-out);
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+  }
+}
+
+// Ant Design 组件全局样式覆盖
+:global {
+  // 按钮增强
+  .ant-btn {
+    @extend .modern-button;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    transition: all var(--duration-base) var(--ease-out);
+
+    &.ant-btn-primary {
+      background: var(--color-primary-gradient);
+      border: none;
+      box-shadow: var(--shadow-sm);
+
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+
+  // 卡片增强
+  .ant-card {
+    @extend .modern-card;
+
+    .ant-card-head {
+      border-bottom: 2px solid var(--color-border-light);
+      padding: var(--spacing-md) var(--spacing-lg);
+
+      .ant-card-head-title {
+        font-weight: 600;
+        font-size: var(--text-lg);
+        color: var(--color-text-primary);
+      }
+    }
+
+    .ant-card-body {
+      padding: var(--spacing-lg);
+    }
+  }
+
+  // 表格增强
+  .ant-table {
+    .ant-table-thead > tr > th {
+      background: var(--color-bg-secondary);
+      font-weight: 600;
+      color: var(--color-text-primary);
+      border-bottom: 2px solid var(--color-border-medium);
+    }
+
+    .ant-table-tbody > tr {
+      transition: all var(--duration-fast) var(--ease-out);
+
+      &:hover {
+        background: var(--color-bg-tertiary);
+        transform: translateX(2px);
+      }
+    }
+  }
+
+  // 输入框增强
+  .ant-input,
+  .ant-input-number,
+  .ant-select-selector {
+    @extend .modern-input;
+  }
+
+  .ant-input-search .ant-input-group .ant-input-affix-wrapper {
+    @extend .modern-input;
+  }
+
+  // 标签增强
+  .ant-tag {
+    @extend .modern-tag;
+    border: none;
+  }
+
+  // 模态框增强
+  .ant-modal {
+    .ant-modal-content {
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-2xl);
+      overflow: hidden;
+    }
+
+    .ant-modal-header {
+      background: var(--color-primary-gradient);
+      border-bottom: none;
+      padding: var(--spacing-lg) var(--spacing-xl);
+
+      .ant-modal-title {
+        color: var(--color-text-inverse);
+        font-size: var(--text-xl);
+        font-weight: 600;
+      }
+    }
+
+    .ant-modal-body {
+      padding: var(--spacing-xl);
+    }
+
+    .ant-modal-footer {
+      border-top: 1px solid var(--color-border-light);
+      padding: var(--spacing-md) var(--spacing-xl);
+    }
+  }
+
+  // Select 下拉框增强
+  .ant-select-dropdown {
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+
+    .ant-select-item {
+      transition: all var(--duration-fast) var(--ease-out);
+
+      &:hover {
+        background: var(--color-bg-tertiary);
+      }
+
+      &.ant-select-item-option-selected {
+        background: var(--color-primary);
+        color: var(--color-text-inverse);
+        font-weight: 500;
+      }
+    }
+  }
+
+  // Form 表单增强
+  .ant-form-item-label > label {
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+
+  // Message 消息提示增强
+  .ant-message {
+    .ant-message-notice-content {
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+    }
+  }
+
+  // Upload 上传组件增强
+  .ant-upload-drag {
+    border: 2px dashed var(--color-border-medium);
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-secondary);
+    transition: all var(--duration-base) var(--ease-out);
+
+    &:hover {
+      border-color: var(--color-primary);
+      background: var(--color-bg-tertiary);
+    }
+  }
+
+  // Space 间距增强
+  .ant-space {
+    gap: var(--spacing-sm) !important;
+  }
+
+  // Typography 增强
+  .ant-typography {
+    &.ant-typography-secondary {
+      color: var(--color-text-secondary);
+    }
+  }
+}
+
+// 页面切换动画
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all var(--duration-base) var(--ease-out);
+}
+
+.page-transition-exit {
+  opacity: 1;
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: all var(--duration-base) var(--ease-in);
 }

@@ -1,12 +1,390 @@
+@import '../styles/design-system.scss';
+
+// 图片标注器容器
 .image-annotator {
   width: 100%;
   height: 100%;
-  padding: 16px;
-  background: #fafafa;
-  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
 
-  canvas {
-    background: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  // Canvas 容器
+  .canvas-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-lg);
+    background: linear-gradient(
+      45deg,
+      var(--color-gray-100) 25%,
+      transparent 25%,
+      transparent 75%,
+      var(--color-gray-100) 75%,
+      var(--color-gray-100)
+    ),
+    linear-gradient(
+      45deg,
+      var(--color-gray-100) 25%,
+      transparent 25%,
+      transparent 75%,
+      var(--color-gray-100) 75%,
+      var(--color-gray-100)
+    );
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+    position: relative;
+    overflow: hidden;
+
+    canvas {
+      display: block;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-xl);
+      cursor: crosshair;
+      transition: all var(--duration-base) var(--ease-out);
+      background: var(--color-bg-primary);
+      image-rendering: crisp-edges;
+
+      &:hover {
+        box-shadow: var(--shadow-2xl);
+      }
+
+      // 绘制状态下的光标
+      &.drawing {
+        cursor: crosshair;
+      }
+
+      &.dragging {
+        cursor: move;
+      }
+
+      &.resizing {
+        cursor: nwse-resize;
+      }
+    }
+  }
+
+  // 工具栏
+  .annotator-toolbar {
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--color-bg-primary);
+    border-top: 2px solid var(--color-border-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+
+    .ant-btn {
+      height: 40px;
+      padding: 0 var(--spacing-lg);
+      font-weight: 500;
+      border-radius: var(--radius-lg);
+      transition: all var(--duration-base) var(--ease-out);
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      &.btn-danger {
+        &:hover:not(:disabled) {
+          background: var(--color-error);
+          border-color: var(--color-error);
+          color: var(--color-text-inverse);
+        }
+      }
+
+      &.btn-primary {
+        background: var(--color-primary-gradient);
+        border: none;
+        color: var(--color-text-inverse);
+        box-shadow: var(--shadow-sm);
+      }
+    }
+
+    .toolbar-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--color-border-light);
+      margin: 0 var(--spacing-sm);
+    }
+  }
+
+  // 状态提示
+  .annotator-status {
+    padding: var(--spacing-sm) var(--spacing-md);
+    text-align: center;
+    background: var(--color-bg-tertiary);
+    border-top: 1px solid var(--color-border-light);
+    font-size: var(--text-xs);
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-lg);
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+
+      .status-icon {
+        width: 8px;
+        height: 8px;
+        border-radius: var(--radius-full);
+
+        &.icon-drawing {
+          background: var(--color-error);
+          animation: pulse 2s infinite;
+        }
+
+        &.icon-selected {
+          background: var(--color-primary);
+        }
+
+        &.icon-normal {
+          background: var(--color-success);
+        }
+      }
+
+      .status-text {
+        font-weight: 500;
+      }
+
+      .status-count {
+        font-weight: 700;
+        color: var(--color-primary);
+      }
+    }
+  }
+
+  // 缩放控制器
+  .zoom-controls {
+    position: absolute;
+    top: var(--spacing-md);
+    right: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: var(--spacing-xs);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    z-index: var(--z-sticky);
+
+    .zoom-btn {
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border-light);
+      background: var(--color-bg-primary);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+
+      &:hover {
+        background: var(--color-primary);
+        border-color: var(--color-primary);
+        color: var(--color-text-inverse);
+        transform: scale(1.1);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+
+      &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+
+        &:hover {
+          background: var(--color-bg-primary);
+          border-color: var(--color-border-light);
+          color: inherit;
+          transform: none;
+        }
+      }
+    }
+
+    .zoom-level {
+      padding: var(--spacing-xs);
+      text-align: center;
+      font-size: var(--text-xs);
+      font-weight: 600;
+      color: var(--color-text-secondary);
+    }
+  }
+
+  // 标注框样式辅助类(用于 Canvas 绘制参考)
+  .box-styles {
+    // 普通框
+    &.box-normal {
+      stroke: var(--color-success);
+      stroke-width: 2px;
+      fill: rgba(16, 185, 129, 0.1);
+    }
+
+    // 选中框
+    &.box-selected {
+      stroke: var(--color-primary);
+      stroke-width: 3px;
+      fill: rgba(102, 126, 234, 0.15);
+    }
+
+    // 正在绘制的框
+    &.box-drawing {
+      stroke: var(--color-error);
+      stroke-width: 2px;
+      stroke-dasharray: 5, 5;
+      fill: rgba(239, 68, 68, 0.1);
+    }
+
+    // 调整句柄
+    &.handle {
+      fill: var(--color-primary);
+      stroke: var(--color-bg-primary);
+      stroke-width: 2px;
+    }
+  }
+
+  // 标签显示
+  .box-label {
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+    white-space: nowrap;
+  }
+
+  // 快捷操作提示
+  .quick-tips {
+    position: absolute;
+    top: var(--spacing-md);
+    left: var(--spacing-md);
+    background: rgba(0, 0, 0, 0.75);
+    color: var(--color-text-inverse);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-xs);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    transition: opacity var(--duration-base) var(--ease-out);
+    pointer-events: none;
+
+    &.visible {
+      opacity: 1;
+    }
+
+    .tip-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      margin: var(--spacing-xs) 0;
+
+      .tip-icon {
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: var(--radius-sm);
+      }
+    }
+  }
+
+  // 标注统计
+  .annotation-stats {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-md);
+
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      font-size: var(--text-xs);
+
+      .stat-value {
+        font-weight: 700;
+        color: var(--color-primary);
+      }
+
+      .stat-label {
+        color: var(--color-text-secondary);
+      }
+    }
+  }
+
+  // 加载状态
+  .annotator-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(5px);
+    z-index: var(--z-modal);
+
+    .loading-spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid var(--color-gray-200);
+      border-top-color: var(--color-primary);
+      border-radius: var(--radius-full);
+      animation: spin 1s linear infinite;
+    }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// 标注框动画
+@keyframes boxAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// 工具提示动画
+@keyframes tipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

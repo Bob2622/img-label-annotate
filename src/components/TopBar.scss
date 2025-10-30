@@ -1,0 +1,130 @@
+@import '../styles/design-system-dark.scss';
+
+.top-bar {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+
+  .top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+
+    .menu-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--duration-fast) var(--ease-out);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-primary);
+      }
+    }
+
+    .search-box {
+      position: relative;
+      width: 300px;
+
+      .search-icon {
+        position: absolute;
+        left: var(--space-3);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-tertiary);
+      }
+
+      .search-input {
+        width: 100%;
+        height: 36px;
+        padding: 0 var(--space-3) 0 36px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border-medium);
+        border-radius: var(--radius-md);
+        color: var(--text-primary);
+        font-size: var(--text-sm);
+        transition: all var(--duration-base) var(--ease-out);
+
+        &:focus {
+          outline: none;
+          border-color: var(--color-primary);
+          background: rgba(255, 255, 255, 0.08);
+          box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.15);
+        }
+
+        &::placeholder {
+          color: var(--text-tertiary);
+        }
+      }
+    }
+  }
+
+  .top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+
+    .view-switcher {
+      display: flex;
+      gap: var(--space-1);
+      background: rgba(255, 255, 255, 0.05);
+      padding: var(--space-1);
+      border-radius: var(--radius-md);
+
+      button {
+        padding: var(--space-2) var(--space-4);
+        border: none;
+        background: transparent;
+        color: var(--text-secondary);
+        font-size: var(--text-sm);
+        font-weight: var(--font-medium);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: all var(--duration-fast) var(--ease-out);
+
+        &:hover {
+          color: var(--text-primary);
+        }
+
+        &.active {
+          background: var(--color-primary);
+          color: white;
+        }
+      }
+    }
+
+    .download-btn {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      border: none;
+      background: var(--color-primary);
+      color: white;
+      font-size: var(--text-sm);
+      font-weight: var(--font-medium);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--duration-fast) var(--ease-out);
+
+      &:hover {
+        background: var(--color-primary-hover);
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+}

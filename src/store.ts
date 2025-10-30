@@ -1,4 +1,5 @@
 import { nanoid } from "nanoid/non-secure";
+import JSZip from "jszip";
 import {
   AnnotationStore,
   Dataset,
@@ -159,6 +160,32 @@ class AppStore {
     return type;
   }
 
+  updateExceptionType(id: string, name: string) {
+    const type = this.state.exceptionTypes.find((t) => t.id === id);
+    if (!type || type.preset) return; // 预置类型不允许修改
+    type.name = name;
+    this.save();
+    this.emit();
+  }
+
+  deleteExceptionType(id: string) {
+    const type = this.state.exceptionTypes.find((t) => t.id === id);
+    if (!type || type.preset) return; // 预置类型不允许删除
+
+    this.state.exceptionTypes = this.state.exceptionTypes.filter((t) => t.id !== id);
+
+    // 同时删除所有使用该异常类型的标注数据
+    Object.keys(this.state.annotations).forEach((imageId) => {
+      const imgAnn = this.state.annotations[imageId];
+      imgAnn.annotations = imgAnn.annotations.filter(
+        (a) => a.exceptionType !== type.name
+      );
+    });
+
+    this.save();
+    this.emit();
+  }
+
   getExceptionTypes(): ExceptionType[] {
     return this.state.exceptionTypes;
   }
@@ -238,6 +265,84 @@ class AppStore {
     const a = document.createElement("a");
     a.href = url;
     a.download = `${dataset.name}_annotations_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // 下载数据集(打包图片+标注数据为 ZIP)
+  async downloadDataset(
+    datasetId: string,
+    onProgress?: (progress: number, message: string) => void
+  ) {
+    const dataset = this.state.datasets.find((d) => d.id === datasetId);
+    if (!dataset) {
+      throw new Error("数据集不存在");
+    }
+
+    const zip = new JSZip();
+
+    // 1. 添加标注数据 JSON
+    onProgress?.(10, "正在生成标注数据...");
+    const exportData = {
+      dataset: dataset.name,
+      exportTime: new Date().toISOString(),
+      images: dataset.images.map((img) => {
+        const annotations = this.state.annotations[img.id] || null;
+        return {
+          id: img.id,
+          filename: img.filename,
+          width: img.width,
+          height: img.height,
+          annotations: annotations?.annotations || [],
+        };
+      }),
+    };
+    zip.file("annotations.json", JSON.stringify(exportData, null, 2));
+
+    // 2. 添加图片文件
+    const imagesFolder = zip.folder("images");
+    if (!imagesFolder) {
+      throw new Error("创建图片文件夹失败");
+    }
+
+    const totalImages = dataset.images.length;
+    for (let i = 0; i < totalImages; i++) {
+      const img = dataset.images[i];
+      onProgress?.(
+        10 + ((i + 1) / totalImages) * 80,
+        `正在打包图片 ${i + 1}/${totalImages}...`
+      );
+
+      try {
+        // 将 base64 转换为 blob
+        const response = await fetch(img.url);
+        const blob = await response.blob();
+        imagesFolder.file(img.filename, blob);
+      } catch (error) {
+        console.error(`打包图片 ${img.filename} 失败:`, error);
+      }
+    }
+
+    // 3. 生成 ZIP 文件
+    onProgress?.(90, "正在压缩文件...");
+    const zipBlob = await zip.generateAsync(
+      {
+        type: "blob",
+        compression: "DEFLATE",
+        compressionOptions: { level: 6 },
+      },
+      (metadata) => {
+        const progress = 90 + metadata.percent * 0.1;
+        onProgress?.(progress, `正在压缩... ${metadata.percent.toFixed(0)}%`);
+      }
+    );
+
+    // 4. 下载
+    onProgress?.(100, "准备下载...");
+    const url = URL.createObjectURL(zipBlob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${dataset.name}_${Date.now()}.zip`;
     a.click();
     URL.revokeObjectURL(url);
   }
