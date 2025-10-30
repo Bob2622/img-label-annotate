@@ -283,10 +283,10 @@ html, body, #root {
 // Message 样式
 .ant-message {
   .ant-message-notice-content {
-    background: rgba(20, 24, 36, 0.98) !important;
+    background: rgba(46, 46, 46, 0.98) !important;  // 使用 --bg-elevated 的颜色
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     color: rgba(255, 255, 255, 0.9) !important;
     border-radius: 12px;
     padding: 12px 20px;
@@ -309,6 +309,66 @@ html, body, #root {
 
     > span {
       color: rgba(255, 255, 255, 0.9) !important;
+    }
+  }
+}
+
+// Image 预览样式
+.ant-image-preview-wrap {
+  background: rgba(13, 13, 13, 0.95) !important;  // 使用 --bg-canvas 的颜色
+  backdrop-filter: blur(10px);
+}
+
+.ant-image-preview-root {
+  .ant-image-preview-mask {
+    background: rgba(13, 13, 13, 0.95) !important;
+  }
+
+  .ant-image-preview-img-wrapper {
+    .ant-image-preview-img {
+      // 保持图片原样
+    }
+  }
+
+  .ant-image-preview-operations {
+    background: rgba(46, 46, 46, 0.9) !important;
+    backdrop-filter: blur(20px);
+    border-radius: 8px;
+    padding: 8px;
+
+    .ant-image-preview-operations-operation {
+      color: rgba(255, 255, 255, 0.9) !important;
+
+      &:hover {
+        color: #5b9cff !important;
+      }
+
+      .anticon {
+        color: inherit !important;
+      }
+    }
+  }
+
+  .ant-image-preview-switch-left,
+  .ant-image-preview-switch-right {
+    background: rgba(46, 46, 46, 0.8) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+
+    &:hover {
+      background: rgba(46, 46, 46, 0.95) !important;
+      color: #5b9cff !important;
+    }
+
+    .anticon {
+      color: inherit !important;
+    }
+  }
+
+  .ant-image-preview-close {
+    color: rgba(255, 255, 255, 0.9) !important;
+
+    &:hover {
+      color: #5b9cff !important;
     }
   }
 }
